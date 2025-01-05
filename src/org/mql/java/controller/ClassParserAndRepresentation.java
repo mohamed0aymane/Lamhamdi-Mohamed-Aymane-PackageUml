@@ -17,49 +17,60 @@ public class ClassParserAndRepresentation {
 	private String className;
 	private Class<?> cls;
 
-	public ClassParserAndRepresentation (String className) {
-		this.className=className;
-		attributes=new ArrayList<>();
-		methodes=new ArrayList<>();
-		try {
-			this.cls=Class.forName(className);
-			addAttributes();
-			addMethodes();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		
-	}
+//	public ClassParserAndRepresentation (String className) {
+//		this.className=className;
+//		attributes=new ArrayList<>();
+//		methodes=new ArrayList<>();
+//		try {
+//			this.cls=Class.forName(className);
+//			addAttributes();
+//			addMethodes();
+//		} catch (ClassNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//		
+//	}
 	
-	private void addAttributes() {
-			Field[] fields=cls.getDeclaredFields();
-			for (Field field : fields) {
-				String modificateur = getModifier(field.getModifiers());
-				attributes.add(modificateur+" "+field.getName()+":"+field.getType().getSimpleName());
-			}
-		
-	}
-	private void addMethodes() {
-		Method[] methodes=cls.getDeclaredMethods();
-		for (Method methode : methodes) {
-			StringBuilder builder=new StringBuilder();
-			String modificateur = getModifier(methode.getModifiers());
-			builder.append(modificateur).append(" ").append(methode.getName()).append("(");
-			
-			Parameter[] methodeParams=methode.getParameters();
-			for (Parameter methodeParam : methodeParams) {
-				builder.append(methodeParam.getType().getSimpleName()).append(", ");
-			}
-			if(builder.lastIndexOf(",")>0) {
-				builder.setLength(builder.length()-2);
-			}
-			builder.append(") :"+methode.getReturnType().getSimpleName());
-			this.methodes.add(builder.toString());
-		}
-		
-	}
+
+	 public ClassParserAndRepresentation(String className) {
+	        this.className = className;
+	        this.attributes = new ArrayList<>();
+	        this.methodes = new ArrayList<>();
+	        parseClass();
+	    }
+	 
+		private void parseClass() {
+	        try {
+	            Class<?> cls = Class.forName(className);
+	            // Parse attributes
+	            for (Field field : cls.getDeclaredFields()) {
+	            	String modificateur = getModifier(field.getModifiers());
+					attributes.add(modificateur+" "+field.getName()+":"+field.getType().getSimpleName());
+	               
+	            }
+	            // Parse methods
+	            for (Method methode : cls.getDeclaredMethods()) {
+	            	StringBuilder builder=new StringBuilder();
+	    			String modificateur = getModifier(methode.getModifiers());
+	    			builder.append(modificateur).append(" ").append(methode.getName()).append("(");
+	    			
+	    			Parameter[] methodeParams=methode.getParameters();
+	    			for (Parameter methodeParam : methodeParams) {
+	    				builder.append(methodeParam.getType().getSimpleName()).append(", ");
+	    			}
+	    			if(builder.lastIndexOf(",")>0) {
+	    				builder.setLength(builder.length()-2);
+	    			}
+	    			builder.append(") :"+methode.getReturnType().getSimpleName());
+	    			this.methodes.add(builder.toString());
+	            }
+	        } catch (ClassNotFoundException e) {
+	            e.printStackTrace();
+	        }
+	    }
+
 
 	
 
@@ -88,6 +99,10 @@ public class ClassParserAndRepresentation {
 
 	public List<String> getMethodes() {
 		return methodes;
+	}
+	
+	public String getClassName() {
+	        return className;
 	}
 
 	

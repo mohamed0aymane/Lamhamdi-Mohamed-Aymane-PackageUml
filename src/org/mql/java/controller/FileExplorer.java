@@ -116,6 +116,10 @@ public class FileExplorer {
     public List<Class<?>> getInterfaces() {
         return interfaces;
     }
+    public String getClassName(Class<?> cls) {
+        return cls.getName(); // Retourne le nom complet de la classe
+    }
+
 
 
     public void printResults() {
