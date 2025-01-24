@@ -1,50 +1,47 @@
 package org.mql.java.test;
 
-import java.util.List;
+
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+
 
 import org.mql.java.controller.ClassParserAndRepresentation;
 import org.mql.java.controller.FileExplorer;
-import org.mql.java.ui.UMLDiagramViewer;
+
 
 
 public class Examples extends JFrame {
 
+	
+	private static final long serialVersionUID = 1L;
+
+
+
+
 	public Examples() {
 		
-		exp03();
+		exp02();
 	}
-	//parser  les methodes et les attributs
 	 void exp01() {
-		 String path = "org.mql.java.ui.shapes.Rectangle";
-		 ClassParserAndRepresentation representation = new ClassParserAndRepresentation(path);
-		 System.out.println("Les attributs : "+representation.getAttributes());
-	     System.out.println("Les methodes  : "+representation.getMethodes());
-	}
-	 
-	 void exp02() {
- 
-		 FileExplorer explorer = new FileExplorer("src/org/mql/java");
-	        explorer.loadPackages();
+		 
+		 FileExplorer explorer = new FileExplorer("Lamhamdi Mohamed Aymane-tp04-packageUml","src");
+	        explorer.loadProject();
 	        explorer.printResults();
 	 }
-	 void exp03(){
-		// Exemple d'utilisation avec des classes fictives
-	        FileExplorer explorer = new FileExplorer("src/org/mql/java/ui/shapes");
-	        explorer.loadPackages();
+	//parser  les methodes et les attributs d'un classe
+	 void exp02() {
+		 String path = "org.mql.java.model.Package";
+		 ClassParserAndRepresentation representation = new ClassParserAndRepresentation(path);
+		    System.out.println("Les attributs : " + representation.getAttributes());
+		    System.out.println("Les méthodes : " + representation.getMethods());
+		    System.out.println("Les agrégations : " + representation.getAggregations());
+		    System.out.println("Les utilisations : " + representation.getUsages());
+		    System.out.println("Les extensions : " + representation.getExtensions());
+		    System.out.println("Les implémentations : " + representation.getImplementations());
+	}
+	 
 
-	        List<Class<?>> classes = explorer.getClasses();
-	        List<ClassParserAndRepresentation> representations = classes.stream()
-	                .map(cls -> new ClassParserAndRepresentation(cls.getName()))
-	                .toList();
-
-	        SwingUtilities.invokeLater(() -> {
-	            UMLDiagramViewer viewer = new UMLDiagramViewer(representations);
-	            viewer.setVisible(true);
-	        });
-	 }
+	
 
 	public static void main(String[] args) {
 		new Examples();
