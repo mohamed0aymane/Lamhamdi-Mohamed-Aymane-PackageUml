@@ -12,7 +12,7 @@ public class UmlDiagramViewer extends JFrame {
 
     public UmlDiagramViewer() {
         setTitle("UML Diagram Viewer");
-        setSize(800, 600);
+        setSize(1000, 800); // Augmenter la taille pour mieux gérer l'espace
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Charger les données du projet
@@ -21,13 +21,27 @@ public class UmlDiagramViewer extends JFrame {
 
         // Panneau principal pour afficher les packages
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(0, 2, 10, 10)); // Affichage en grille
-        mainPanel.setBackground(Color.LIGHT_GRAY);
+        mainPanel.setLayout(new GridBagLayout()); // Utilisation de GridBagLayout
 
-        // Ajouter les packages comme rectangles
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); // Espacement entre les éléments
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Ajouter les packages avec 3 par ligne minimum
+        int row = 0;
+        int col = 0;
         for (Package pkg : explorer.getPackages()) {
             JPanel packagePanel = createPackagePanel(pkg);
-            mainPanel.add(packagePanel);
+            gbc.gridx = col;
+            gbc.gridy = row;
+
+            mainPanel.add(packagePanel, gbc);
+
+            col++;
+            if (col == 2) { // Passer à la ligne suivante après 3 colonnes
+                col = 0;
+                row++;
+            }
         }
 
         // Ajouter le panneau principal à un JScrollPane
@@ -37,11 +51,11 @@ public class UmlDiagramViewer extends JFrame {
         setVisible(true);
     }
 
+    
     private JPanel createPackagePanel(Package pkg) {
         JPanel packagePanel = new JPanel();
         packagePanel.setLayout(new BorderLayout());
         packagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        packagePanel.setBackground(Color.WHITE);
 
         // Ajouter le nom du package
         String packageName = pkg.getName().endsWith(".")
@@ -50,24 +64,76 @@ public class UmlDiagramViewer extends JFrame {
         JLabel packageLabel = new JLabel(packageName, JLabel.CENTER);
         packageLabel.setFont(new Font("Arial", Font.BOLD, 14));
         packageLabel.setOpaque(true);
-        packageLabel.setBackground(Color.GRAY);
-        packageLabel.setForeground(Color.WHITE);
+        packageLabel.setForeground(Color.BLACK);
+
         packagePanel.add(packageLabel, BorderLayout.NORTH);
 
-        // Ajouter les éléments du package
+        // Ajouter les éléments du package (classes, interfaces, énumérations, annotations)
         JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setLayout(new GridBagLayout()); // Utilisation de GridBagLayout
+        contentPanel.setBackground(Color.WHITE); // Fond blanc pour le contraste
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Marges internes
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); // Espacement entre les sous-panneaux
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
 
         // Lister les classes, interfaces, énumérations et annotations
-        pkg.getClasses().forEach(cls -> contentPanel.add(createClassDiagram(cls)));
-        pkg.getInterfaces().forEach(cls -> contentPanel.add(createInterfaceDiagram(cls)));
-        pkg.getEnumerations().forEach(cls -> contentPanel.add(createEnumerationDiagram(cls)));
-        pkg.getAnnotations().forEach(cls -> contentPanel.add(createAnnotationDiagram(cls)));
+        int columnCount = 3; // Deux colonnes
+        int col = 0;
+        for (Class<?> cls : pkg.getClasses()) {
+            contentPanel.add(createClassDiagram(cls), gbc);
+            col++;
+            if (col == columnCount) {
+                col = 0;
+                gbc.gridy++;
+                gbc.gridx = 0;
+            } else {
+                gbc.gridx++;
+            }
+        }
+        for (Class<?> cls : pkg.getInterfaces()) {
+            contentPanel.add(createInterfaceDiagram(cls), gbc);
+            col++;
+            if (col == columnCount) {
+                col = 0;
+                gbc.gridy++;
+                gbc.gridx = 0;
+            } else {
+                gbc.gridx++;
+            }
+        }
+        for (Class<?> cls : pkg.getEnumerations()) {
+            contentPanel.add(createEnumerationDiagram(cls), gbc);
+            col++;
+            if (col == columnCount) {
+                col = 0;
+                gbc.gridy++;
+                gbc.gridx = 0;
+            } else {
+                gbc.gridx++;
+            }
+        }
+        for (Class<?> cls : pkg.getAnnotations()) {
+            contentPanel.add(createAnnotationDiagram(cls), gbc);
+            col++;
+            if (col == columnCount) {
+                col = 0;
+                gbc.gridy++;
+                gbc.gridx = 0;
+            } else {
+                gbc.gridx++;
+            }
+        }
 
-        packagePanel.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
+        packagePanel.add(contentPanel, BorderLayout.CENTER);
 
         return packagePanel;
     }
+
+
 
     private JPanel createClassDiagram(Class<?> cls) {
         JPanel classPanel = new JPanel();
@@ -80,23 +146,33 @@ public class UmlDiagramViewer extends JFrame {
         classLabel.setOpaque(true);
         classPanel.add(classLabel, BorderLayout.NORTH);
 
-        JTextArea detailsArea = new JTextArea();
-        detailsArea.setEditable(false);
-        detailsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        detailsArea.setBackground(Color.WHITE);
+        // Création du panneau principal pour les attributs et méthodes
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS)); // Pour aligner verticalement
 
+        // Attributs
+        JPanel fieldsPanel = new JPanel();
+        fieldsPanel.setLayout(new BoxLayout(fieldsPanel, BoxLayout.Y_AXIS));
         ClassParserAndRepresentation parser = new ClassParserAndRepresentation(cls.getName());
-        detailsArea.append("\n");
-       // Attributes:
-        parser.getAttributes().forEach(attr -> detailsArea.append( attr + "\n"));
-        
-        // Ligne séparatrice entre les attributs et les méthodes
-      //methods
-    
-       
-        parser.getMethods().forEach(method -> detailsArea.append( "\n"+method + "\n"));
+        parser.getAttributes().forEach(attr -> fieldsPanel.add(new JLabel(attr)));
 
-        classPanel.add(new JScrollPane(detailsArea), BorderLayout.CENTER);
+        // Séparateur entre les attributs et les méthodes
+        JSeparator separator = new JSeparator();
+        separator.setOrientation(SwingConstants.HORIZONTAL);
+        separator.setPreferredSize(new Dimension(0, 5)); // Pour donner de l'espace visuel
+
+        // Méthodes
+        JPanel methodsPanel = new JPanel();
+        methodsPanel.setLayout(new BoxLayout(methodsPanel, BoxLayout.Y_AXIS));
+        parser.getMethods().forEach(method -> methodsPanel.add(new JLabel(method)));
+
+        // Ajouter les panneaux d'attributs et de méthodes dans le panneau principal
+        contentPanel.add(fieldsPanel);
+        contentPanel.add(separator);
+        contentPanel.add(methodsPanel);
+
+        // Ajouter le contenu dans le panneau de la classe
+        classPanel.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
 
         return classPanel;
     }
@@ -118,8 +194,7 @@ public class UmlDiagramViewer extends JFrame {
         detailsArea.setBackground(Color.WHITE);
 
         ClassParserAndRepresentation parser = new ClassParserAndRepresentation(cls.getName());
-        
-        parser.getMethods().forEach(method -> detailsArea.append( method + "\n"));
+        parser.getMethods().forEach(method -> detailsArea.append(method + "\n"));
 
         interfacePanel.add(new JScrollPane(detailsArea), BorderLayout.CENTER);
 
