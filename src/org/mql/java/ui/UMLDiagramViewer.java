@@ -138,11 +138,12 @@ public class UmlDiagramViewer extends JFrame {
     private JPanel createClassDiagram(Class<?> cls) {
         JPanel classPanel = new JPanel();
         classPanel.setLayout(new BorderLayout());
-        classPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
-        JLabel classLabel = new JLabel("Class: " + cls.getSimpleName(), JLabel.CENTER);
+        JLabel classLabel = new JLabel("<html><center>&lt;&lt;Class&gt;&gt;<br>" 
+                + cls.getSimpleName() + "</center></html>", JLabel.CENTER);
         classLabel.setFont(new Font("Arial", Font.BOLD, 12));
-        classLabel.setBackground(Color.CYAN);
+        classLabel.setBackground(Color.BLUE);
+        classLabel.setForeground(Color.WHITE);
         classLabel.setOpaque(true);
         classPanel.add(classLabel, BorderLayout.NORTH);
 
@@ -180,17 +181,18 @@ public class UmlDiagramViewer extends JFrame {
     private JPanel createInterfaceDiagram(Class<?> cls) {
         JPanel interfacePanel = new JPanel();
         interfacePanel.setLayout(new BorderLayout());
-        interfacePanel.setBorder(BorderFactory.createLineBorder(Color.GREEN));
 
-        JLabel interfaceLabel = new JLabel("Interface: " + cls.getSimpleName(), JLabel.CENTER);
+        JLabel interfaceLabel = new JLabel("<html><center>&lt;&lt;Interface&gt;&gt;<br>" 
+                + cls.getSimpleName() + "</center></html>", JLabel.CENTER);
         interfaceLabel.setFont(new Font("Arial", Font.BOLD, 12));
         interfaceLabel.setBackground(Color.LIGHT_GRAY);
+        interfaceLabel.setForeground(Color.WHITE);
         interfaceLabel.setOpaque(true);
         interfacePanel.add(interfaceLabel, BorderLayout.NORTH);
 
         JTextArea detailsArea = new JTextArea();
         detailsArea.setEditable(false);
-        detailsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        detailsArea.setFont(new Font("Arial", Font.BOLD, 12));
         detailsArea.setBackground(Color.WHITE);
 
         ClassParserAndRepresentation parser = new ClassParserAndRepresentation(cls.getName());
@@ -204,28 +206,60 @@ public class UmlDiagramViewer extends JFrame {
     private JPanel createEnumerationDiagram(Class<?> cls) {
         JPanel enumPanel = new JPanel();
         enumPanel.setLayout(new BorderLayout());
-        enumPanel.setBorder(BorderFactory.createLineBorder(Color.ORANGE));
-
-        JLabel enumLabel = new JLabel("Enumeration: " + cls.getSimpleName(), JLabel.CENTER);
+      
+        JLabel enumLabel = new JLabel("<html><center>&lt;&lt;Enumeration&gt;&gt;<br>" 
+                + cls.getSimpleName() + "</center></html>", JLabel.CENTER);
         enumLabel.setFont(new Font("Arial", Font.BOLD, 12));
-        enumLabel.setBackground(Color.YELLOW);
+        enumLabel.setBackground(Color.GREEN);
+        enumLabel.setForeground(Color.WHITE);
         enumLabel.setOpaque(true);
         enumPanel.add(enumLabel, BorderLayout.NORTH);
+
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+        // Vérifier si la classe est une énumération
+        if (cls.isEnum()) {
+            // Récupérer les constantes de l'énumération
+            Object[] enumConstants = cls.getEnumConstants();
+            if (enumConstants != null) {
+                for (Object constant : enumConstants) {
+                    JLabel constantLabel = new JLabel(" "+constant.toString());
+                    constantLabel.setFont(new Font("Arial", Font.BOLD, 12));
+                    contentPanel.add(constantLabel);
+                }
+            }
+        }
+
+        enumPanel.add(contentPanel, BorderLayout.CENTER);
 
         return enumPanel;
     }
 
+  
+
     private JPanel createAnnotationDiagram(Class<?> cls) {
         JPanel annotationPanel = new JPanel();
         annotationPanel.setLayout(new BorderLayout());
-        annotationPanel.setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
 
-        JLabel annotationLabel = new JLabel("Annotation: " + cls.getSimpleName(), JLabel.CENTER);
+        JLabel annotationLabel = new JLabel("<html><center>&lt;&lt;Annotation&gt;&gt;<br>" 
+                + cls.getSimpleName() + "</center></html>", JLabel.CENTER);
         annotationLabel.setFont(new Font("Arial", Font.BOLD, 12));
-        annotationLabel.setBackground(Color.PINK);
+        annotationLabel.setBackground(Color.DARK_GRAY);
+        annotationLabel.setForeground(Color.WHITE);
         annotationLabel.setOpaque(true);
         annotationPanel.add(annotationLabel, BorderLayout.NORTH);
+        
+        
+        JTextArea detailsArea = new JTextArea();
+        detailsArea.setEditable(false);
+        detailsArea.setFont(new Font("Arial", Font.BOLD, 12));
+        detailsArea.setBackground(Color.WHITE);
 
+        ClassParserAndRepresentation parser = new ClassParserAndRepresentation(cls.getName());
+        parser.getMethods().forEach(method -> detailsArea.append(method + "\n"));
+
+        annotationPanel.add(new JScrollPane(detailsArea), BorderLayout.CENTER);
         return annotationPanel;
     }
 
