@@ -20,51 +20,51 @@ import java.util.List;
 public class XMLParser {
 
 
-	    public void exportProjectToXML(Project project, String outputFilePath) throws Exception {
-	        // Créer une instance de DocumentBuilderFactory et DocumentBuilder
-	        DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
-	        DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
+	public void exportProjectToXML(Project project, String outputFilePath) throws Exception {
+	    // Créer une instance de DocumentBuilderFactory et DocumentBuilder
+	    DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
+	    DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
+	    
+	    // Créer un document XML vide
+	    Document document = documentBuilder.newDocument();
+	    
+	    // Créer l'élément racine du XML (Projet)
+	    Element rootElement = document.createElement("Project");
+	    rootElement.setAttribute("name", project.getName());
+	    document.appendChild(rootElement);
+	    
+	    // Parcourir les packages du projet
+	    for (Package pkg : project.getPackages()) {
+	        // Créer un élément pour chaque package
+	        Element packageElement = document.createElement("Package");
+	        packageElement.setAttribute("name", pkg.getName());
+	        rootElement.appendChild(packageElement);
 	        
-	        // Créer un document XML vide
-	        Document document = documentBuilder.newDocument();
+	        // Ajouter les classes du package
+	        addClassesToPackageElement(document, packageElement, pkg.getClasses());
 	        
-	        // Créer l'élément racine du XML (Projet)
-	        Element rootElement = document.createElement("Project");
-	        rootElement.setAttribute("name", project.getName());
-	        document.appendChild(rootElement);
+	        // Ajouter les interfaces du package
+	        addInterfacesToPackageElement(document, packageElement, pkg.getInterfaces());
 	        
-	        // Parcourir les packages du projet
-	        for (Package pkg : project.getPackages()) {
-	            // Créer un élément pour chaque package
-	            Element packageElement = document.createElement("Package");
-	            packageElement.setAttribute("name", pkg.getName());
-	            rootElement.appendChild(packageElement);
-	            
-	            // Ajouter les classes du package
-	            addClassesToPackageElement(document, packageElement, pkg.getClasses());
-	            
-	            // Ajouter les interfaces du package
-	            addClassesToPackageElement(document, packageElement, pkg.getInterfaces());
-	            
-	            // Ajouter les énumérations du package
-	            addClassesToPackageElement(document, packageElement, pkg.getEnumerations());
-	            
-	            // Ajouter les annotations du package
-	            addClassesToPackageElement(document, packageElement, pkg.getAnnotations());
-	            
-	            // Ajouter les relations du package
-	            addRelationsToPackageElement(document, packageElement, pkg.getRelations());
-	        }
-
-	        // Transformer le document en XML et l'écrire dans un fichier
-	        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-	        Transformer transformer = transformerFactory.newTransformer();
-	        DOMSource source = new DOMSource(document);
-	        StreamResult result = new StreamResult(new File(outputFilePath));
-	        transformer.transform(source, result);
+	        // Ajouter les énumérations du package
+	        addEnumerationsToPackageElement(document, packageElement, pkg.getEnumerations());
 	        
-	        System.out.println("Le projet a été exporté vers le fichier XML : " + outputFilePath);
+	        // Ajouter les annotations du package
+	        addAnnotationsToPackageElement(document, packageElement, pkg.getAnnotations());
+	        
+	        // Ajouter les relations du package
+	        addRelationsToPackageElement(document, packageElement, pkg.getRelations());
 	    }
+
+	    // Transformer le document en XML et l'écrire dans un fichier
+	    TransformerFactory transformerFactory = TransformerFactory.newInstance();
+	    Transformer transformer = transformerFactory.newTransformer();
+	    DOMSource source = new DOMSource(document);
+	    StreamResult result = new StreamResult(new File(outputFilePath));
+	    transformer.transform(source, result);
+	    
+	    System.out.println("Le projet a été exporté vers le fichier XML : " + outputFilePath);
+	}
 
 	    private void addClassesToPackageElement(Document document, Element packageElement, List<Class<?>> classes) {
 	        if (classes.isEmpty()) return;

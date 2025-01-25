@@ -11,12 +11,9 @@ import org.mql.java.controller.FileExplorer;
 import org.mql.java.model.Project;
 import org.mql.java.ui.UmlDiagramViewer;
 import org.mql.java.xml.XMLParser;
-
-
-
+import org.mql.java.xml.XMLParserWithNode;
 
 public class Examples extends JFrame {
-
 	
 	private static final long serialVersionUID = 1L;
 
@@ -46,7 +43,7 @@ public class Examples extends JFrame {
 
 	//parser XMI
 	 void exp03() {
-		
+	
 	 }
 	 //parser XML
 	 void exp04() {
@@ -62,10 +59,24 @@ public class Examples extends JFrame {
 	            e.printStackTrace();
 	        }
 	  }
+	 //parser XMl using XMLNode
+	void exp05() {
+		 try {
+	            
+	            FileExplorer fileExplorer = new FileExplorer("Lamhamdi Mohamed Aymane-tp04-packageUml","src");
+	            fileExplorer.loadProject();
+	            Project project = fileExplorer.getProject();
+
+	            XMLParserWithNode xmlExporter = new XMLParserWithNode();
+	            xmlExporter.exportProjectToXML(project, "resources/projet.xml");
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
 		
+	}
 
 	 //	UmlDiagramViewer
-	 void exp05() {
+	 void exp06() {
 		 SwingUtilities.invokeLater(UmlDiagramViewer::new);
 	 }
 	 
