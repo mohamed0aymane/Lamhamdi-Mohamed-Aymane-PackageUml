@@ -12,6 +12,7 @@ import org.mql.java.model.Project;
 import org.mql.java.ui.UmlDiagramViewer;
 import org.mql.java.xml.XMLParser;
 import org.mql.java.xml.XMLParserWithNode;
+import org.mql.java.xml.XmiGenerator;
 
 public class Examples extends JFrame {
 	
@@ -19,7 +20,7 @@ public class Examples extends JFrame {
 
 	public Examples() {
 		
-		exp01();
+		exp06();
 	}
 	 void exp01() {
 		 
@@ -43,7 +44,11 @@ public class Examples extends JFrame {
 
 	//parser XMI
 	 void exp03() {
-	
+		 FileExplorer explorer = new FileExplorer("Lamhamdi Mohamed Aymane-tp04-packageUml","src");
+		 explorer.loadProject();
+		 XmiGenerator generator = new XmiGenerator();
+		 generator.generateXmi(explorer.getProject(), "resources/output.xmi");
+
 	 }
 	 //parser XML
 	 void exp04() {

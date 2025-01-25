@@ -18,44 +18,32 @@ import java.util.List;
 public class XMLParserWithNode {
 
     public void exportProjectToXML(Project project, String outputFilePath) throws Exception {
-        // Créer une instance de DocumentBuilderFactory et DocumentBuilder
         DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
         
-        // Créer un document XML vide
         Document document = documentBuilder.newDocument();
         
-        // Créer l'élément racine du XML (Projet)
         Element rootElement = document.createElement("Project");
         rootElement.setAttribute("name", project.getName());
         document.appendChild(rootElement);
         
-        // Utilisation de XMLNode pour ajouter les packages
         XMLNode rootNode = new XMLNode(rootElement);
         
-        // Parcourir les packages du projet
         for (Package pkg : project.getPackages()) {
-            // Créer un élément pour chaque package
             XMLNode packageNode = new XMLNode(document.createElement("Package"));
             ((Element) packageNode.getNode()).setAttribute("name", pkg.getName());
             rootNode.appendChild(packageNode);
             
-            // Ajouter les classes, interfaces, énumérations et annotations du package
             addClassesToPackageElement(packageNode, pkg.getClasses());
-            // Ajouter les interfaces du package
             addInterfacesToPackageElement(packageNode, pkg.getInterfaces());
             
-            // Ajouter les énumérations du package
             addEnumerationsToPackageElement(packageNode, pkg.getEnumerations());
             
-            // Ajouter les annotations du package
             addAnnotationsToPackageElement(packageNode, pkg.getAnnotations());
             
-            // Ajouter les relations du package
             addRelationsToPackageElement(packageNode, pkg.getRelations());
         }
 
-        // Transformer le document en XML et l'écrire dans un fichier
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(document);

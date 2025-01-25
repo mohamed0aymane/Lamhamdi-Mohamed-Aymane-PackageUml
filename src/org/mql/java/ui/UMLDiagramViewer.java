@@ -17,7 +17,7 @@ public class UmlDiagramViewer extends JFrame {
         setSize(1000, 800); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        FileExplorer explorer = new FileExplorer("MonProjet", "src");
+        FileExplorer explorer = new FileExplorer("Lamhamdi Mohamed Aymane-tp04-packageUml", "src");
         explorer.loadProject();
 
         JPanel mainPanel = new JPanel();
@@ -67,20 +67,17 @@ public class UmlDiagramViewer extends JFrame {
 
         packagePanel.add(packageLabel, BorderLayout.NORTH);
 
-        // Ajouter les éléments du package (classes, interfaces, énumérations, annotations)
         JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new GridBagLayout()); // Utilisation de GridBagLayout
-        contentPanel.setBackground(Color.WHITE); // Fond blanc pour le contraste
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Marges internes
-
+        contentPanel.setLayout(new GridBagLayout()); 
+        contentPanel.setBackground(Color.WHITE); 
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Espacement entre les sous-panneaux
+        gbc.insets = new Insets(10, 10, 10, 10); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0;
         gbc.gridy = 0;
 
-        // Lister les classes, interfaces, énumérations et annotations
-        int columnCount = 3; // Deux colonnes
+        int columnCount = 2; 
         int col = 0;
         for (Class<?> cls : pkg.getClasses()) {
             contentPanel.add(createClassDiagram(cls), gbc);
