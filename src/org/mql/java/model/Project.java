@@ -3,7 +3,7 @@ package org.mql.java.model;
 import java.util.ArrayList;
 import java.util.List;
 
-//pour representer un projet java
+
 public class Project {
 	private String name;
     private List<Package> packages;

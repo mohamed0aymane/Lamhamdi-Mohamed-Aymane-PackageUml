@@ -5,6 +5,8 @@ import java.awt.*;
 import org.mql.java.controller.FileExplorer;
 import org.mql.java.controller.ClassParserAndRepresentation;
 import org.mql.java.model.Package;
+import org.mql.java.model.Relation;
+import org.mql.java.model.RelationType;
 
 public class UmlDiagramViewer extends JFrame {
 
@@ -12,22 +14,19 @@ public class UmlDiagramViewer extends JFrame {
 
     public UmlDiagramViewer() {
         setTitle("UML Diagram Viewer");
-        setSize(1000, 800); // Augmenter la taille pour mieux gérer l'espace
+        setSize(1000, 800); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Charger les données du projet
         FileExplorer explorer = new FileExplorer("MonProjet", "src");
         explorer.loadProject();
 
-        // Panneau principal pour afficher les packages
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridBagLayout()); // Utilisation de GridBagLayout
+        mainPanel.setLayout(new GridBagLayout()); 
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Espacement entre les éléments
+        gbc.insets = new Insets(10, 10, 10, 10); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Ajouter les packages avec 3 par ligne minimum
         int row = 0;
         int col = 0;
         for (Package pkg : explorer.getPackages()) {
@@ -38,7 +37,7 @@ public class UmlDiagramViewer extends JFrame {
             mainPanel.add(packagePanel, gbc);
 
             col++;
-            if (col == 2) { // Passer à la ligne suivante après 3 colonnes
+            if (col == 2) { 
                 col = 0;
                 row++;
             }
@@ -147,9 +146,8 @@ public class UmlDiagramViewer extends JFrame {
         classLabel.setOpaque(true);
         classPanel.add(classLabel, BorderLayout.NORTH);
 
-        // Création du panneau principal pour les attributs et méthodes
         JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS)); // Pour aligner verticalement
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS)); 
 
         // Attributs
         JPanel fieldsPanel = new JPanel();
@@ -157,22 +155,20 @@ public class UmlDiagramViewer extends JFrame {
         ClassParserAndRepresentation parser = new ClassParserAndRepresentation(cls.getName());
         parser.getAttributes().forEach(attr -> fieldsPanel.add(new JLabel(attr)));
 
-        // Séparateur entre les attributs et les méthodes
+        // Separateur entre les attributs et les methodes
         JSeparator separator = new JSeparator();
         separator.setOrientation(SwingConstants.HORIZONTAL);
-        separator.setPreferredSize(new Dimension(0, 5)); // Pour donner de l'espace visuel
+        separator.setPreferredSize(new Dimension(0, 5)); 
 
         // Méthodes
         JPanel methodsPanel = new JPanel();
         methodsPanel.setLayout(new BoxLayout(methodsPanel, BoxLayout.Y_AXIS));
         parser.getMethods().forEach(method -> methodsPanel.add(new JLabel(method)));
 
-        // Ajouter les panneaux d'attributs et de méthodes dans le panneau principal
         contentPanel.add(fieldsPanel);
         contentPanel.add(separator);
         contentPanel.add(methodsPanel);
 
-        // Ajouter le contenu dans le panneau de la classe
         classPanel.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
 
         return classPanel;
@@ -218,9 +214,7 @@ public class UmlDiagramViewer extends JFrame {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-        // Vérifier si la classe est une énumération
         if (cls.isEnum()) {
-            // Récupérer les constantes de l'énumération
             Object[] enumConstants = cls.getEnumConstants();
             if (enumConstants != null) {
                 for (Object constant : enumConstants) {
@@ -263,7 +257,44 @@ public class UmlDiagramViewer extends JFrame {
         return annotationPanel;
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(UmlDiagramViewer::new);
+    private JPanel createRelationsPanel(Package pkg) {
+        JPanel relationsPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                drawRelations(g, pkg); 
+            }
+        };
+        relationsPanel.setBackground(Color.WHITE);
+        relationsPanel.setPreferredSize(new Dimension(300, 200)); 
+        return relationsPanel;
+    }
+
+    private void drawRelations(Graphics g, Package pkg) {
+        java.util.List<Relation> relations = pkg.getRelations();
+        for (Relation relation : relations) {
+            
+            if (relation.getRelationType() == RelationType.COMPOSITION) {
+                drawDiamond(g, relation.getClassSourceName(), relation.getClassTargetName(), true);
+            } else if (relation.getRelationType() == RelationType.AGGREGATION) {
+                drawDiamond(g, relation.getClassSourceName(), relation.getClassTargetName(), false);
+            }
+        }
+    }
+
+    private void drawDiamond(Graphics g, String sourceClass, String targetClass, boolean filled) {
+        int x1 = 100; 
+        int y1 = 100; 
+        int x2 = 150;
+        int y2 = 150;
+        
+        int[] xPoints = { x1, x1 - 10, x1, x1 + 10 }; 
+        int[] yPoints = { y1, y1 + 10, y1 + 20, y1 + 10 };
+
+        if (filled) {
+            g.fillPolygon(xPoints, yPoints, 4);
+        } else {
+            g.drawPolygon(xPoints, yPoints, 4);
+        }
     }
 }

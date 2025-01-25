@@ -1,146 +1,17 @@
 package org.mql.java.controller;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.mql.java.model.Project;
 import org.mql.java.model.Package;
-//
-//public class FileExplorer {
-//    private String pathPackage;
-//    private String namePackage;
-//    private List<Class<?>> classes;
-//    private List<Class<?>> enumerations;
-//    private List<Class<?>> annotations;
-//    private List<Class<?>> interfaces;
-//  
-//
-//    public FileExplorer(String pathPackage) {
-//        this.pathPackage = pathPackage;
-//        this.classes = new ArrayList<>();
-//        this.enumerations = new ArrayList<>();
-//        this.annotations = new ArrayList<>();
-//        this.interfaces = new ArrayList<>();
-//       
-//
-//        // Deduire le package à partir du chemin donne
-//        this.namePackage = pathPackage
-//                .replace("src/", "")   // Retirer le prefixe src/
-//                .replace("/", ".")     // Remplacer les separateurs de dossier par des points
-//                .replace("\\", ".")    // Compatibilite Windows
-//                + ".";                 // Ajouter un point à la fin pour les sous-packages
-//    }
-//
-//    // Constructeur pour les sous-packages
-//    private FileExplorer(String pathPackage, String packageName) {
-//        this.pathPackage = pathPackage;
-//        this.namePackage = packageName;
-//        this.classes = new ArrayList<>();
-//        this.enumerations = new ArrayList<>();
-//        this.annotations = new ArrayList<>();
-//        this.interfaces = new ArrayList<>();
-//        
-//    }
-//
-//    public void loadPackages() {
-//        try {
-//            File directory = new File(pathPackage);
-//
-//            if (!directory.exists()) {
-//                System.out.println("Le chemin specifie n'existe pas : \n  - " + pathPackage);
-//                return;
-//            }
-//
-//            File[] fileList = directory.listFiles();
-//
-//            if (fileList == null || fileList.length == 0) {
-//                System.out.println("Aucun fichier dans le repertoire :  \n  - " + pathPackage);
-//                return;
-//            }
-//
-//            for (File file : fileList) {
-//                if (file.isDirectory()) {
-//                    // Gestion recursive pour les sous-dossiers
-//                    String subPackage = namePackage + file.getName() + ".";
-//                    FileExplorer subExplorer = new FileExplorer(file.getPath(), subPackage);
-//                    subExplorer.loadPackages();
-//                    mergeResults(subExplorer);
-//                } else if (file.getName().endsWith(".java")) {
-//                    String className = file.getName().replace(".java", "");
-//                    try {
-//                        Class<?> cls = Class.forName(namePackage + className);
-//                        categorizeClass(cls);
-//                    } catch (ClassNotFoundException e) {
-//                        System.out.println("Classe introuvable : " + namePackage + className);
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private void mergeResults(FileExplorer subExplorer) {
-//        classes.addAll(subExplorer.getClasses());
-//        enumerations.addAll(subExplorer.getEnumerations());
-//        annotations.addAll(subExplorer.getAnnotations());
-//        interfaces.addAll(subExplorer.getInterfaces());
-//        
-//    }
-//
-//    private void categorizeClass(Class<?> cls) {
-//        if (cls.isAnnotation()) {
-//            annotations.add(cls);
-//        } else if (cls.isEnum()) {
-//            enumerations.add(cls);
-//        } else if (cls.isInterface()) {
-//            interfaces.add(cls);
-//        } else {
-//            classes.add(cls);
-//        }
-//    }
-//
-//    
-//
-//
-//    public List<Class<?>> getClasses() {
-//        return classes;
-//    }
-//
-//    public List<Class<?>> getEnumerations() {
-//        return enumerations;
-//    }
-//
-//    public List<Class<?>> getAnnotations() {
-//        return annotations;
-//    }
-//
-//    public List<Class<?>> getInterfaces() {
-//        return interfaces;
-//    }
-//    public String getClassName(Class<?> cls) {
-//        return cls.getName(); // Retourne le nom complet de la classe
-//    }
-//
-//
-//
-//    public void printResults() {
-//        System.out.println("\nClasses trouvees :");
-//        classes.forEach(cls -> System.out.println("  - " + cls.getName()));
-//
-//        System.out.println("\nEnumerations trouvees :");
-//        enumerations.forEach(enumCls -> System.out.println("  - " + enumCls.getName()));
-//
-//        System.out.println("\nAnnotations trouvees :");
-//        annotations.forEach(annotation -> System.out.println("  - " + annotation.getName()));
-//
-//        System.out.println("\nInterfaces trouvees :");
-//        interfaces.forEach(interfaceCls -> System.out.println("  - " + interfaceCls.getName()));
-//
-//        
-//    }
-//}
+import org.mql.java.model.Relation;
+import org.mql.java.model.RelationType;
+
 public class FileExplorer {
     private Project project;
     private String path;
@@ -152,6 +23,7 @@ public class FileExplorer {
 
     public void loadProject() {
         exploreDirectory(new File(path), "");
+        determineRelations(); 
     }
 
     private void exploreDirectory(File directory, String packageName) {
@@ -201,6 +73,83 @@ public class FileExplorer {
         }
     }
     
+    public void determineRelations() {
+        for (Package pkg : project.getPackages()) {
+            for (Class<?> cls : pkg.getClasses()) {
+               // System.out.println("Analyzing class: " + cls.getSimpleName());
+                
+                
+                Class<?> superClass = cls.getSuperclass();
+                if (superClass != null && superClass != Object.class) {
+                    pkg.addRelation(new Relation(superClass.getSimpleName(), cls.getSimpleName(), RelationType.INHERITANCE));
+                }
+
+                
+                Class<?>[] interfaces = cls.getInterfaces();
+                for (Class<?> interfaceCls : interfaces) {
+                    pkg.addRelation(new Relation(interfaceCls.getSimpleName(), cls.getSimpleName(), RelationType.IMPLEMENTATION));
+                }
+
+               
+                Field[] fields = cls.getDeclaredFields();
+                for (Field field : fields) {
+                    Class<?> fieldType = field.getType();
+                   // System.out.println("Analyzing field: " + field.getName() + " of type " + fieldType.getName());
+
+                    
+                    if (isClassInPackage(fieldType, pkg)) {
+                        RelationType relationType = determineCompositionOrAggregation(fieldType);
+                        pkg.addRelation(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), relationType));
+                    }
+                    
+                    else if (isCollection(fieldType)) {
+                        Class<?> genericType = getGenericType(field);
+                        if (genericType != null && isClassInPackage(genericType, pkg)) {
+                            System.out.println("Found aggregation: " + cls.getSimpleName() + " -> " + genericType.getSimpleName());
+                            pkg.addRelation(new Relation(cls.getSimpleName(), genericType.getSimpleName(), RelationType.AGGREGATION));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    private Class<?> getGenericType(Field field) {
+        try {
+            if (field.getGenericType() instanceof ParameterizedType) {
+                ParameterizedType type = (ParameterizedType) field.getGenericType();
+                
+                if (type.getActualTypeArguments().length > 0 && type.getActualTypeArguments()[0] instanceof Class) {
+                    return (Class<?>) type.getActualTypeArguments()[0];
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private RelationType determineCompositionOrAggregation(Class<?> cls) {
+        if (Collection.class.isAssignableFrom(cls)) {
+            return RelationType.AGGREGATION;
+        }
+        return RelationType.COMPOSITION;
+    }
+
+
+
+    private boolean isClassInPackage(Class<?> cls, Package pkg) {
+        return cls.getPackage() != null && cls.getPackage().getName().equals(pkg.getName());
+    }
+
+    private boolean isCollection(Class<?> cls) {
+        return Collection.class.isAssignableFrom(cls);
+    }
+
+    
+
+
     public List<Class<?>> getClasses() {
         List<Class<?>> classes = new ArrayList<>();
         for (Package pkg : project.getPackages()) {
@@ -208,6 +157,7 @@ public class FileExplorer {
         }
         return classes;
     }
+
     public List<Package> getPackages() {
         return project.getPackages();
     }
@@ -215,7 +165,7 @@ public class FileExplorer {
     public void printResults() {
         System.out.println("Projet : " + project.getName());
         for (Package pkg : project.getPackages()) {
-        	String packageName= pkg.getName().endsWith(".")  ? pkg.getName().substring(0, pkg.getName().length() - 1) : pkg.getName();
+            String packageName = pkg.getName().endsWith(".") ? pkg.getName().substring(0, pkg.getName().length() - 1) : pkg.getName();
             System.out.println("\nPackage : " + packageName);
             System.out.println("  Classes :");
             pkg.getClasses().forEach(cls -> System.out.println("    - " + cls.getSimpleName()));
@@ -225,12 +175,17 @@ public class FileExplorer {
             pkg.getEnumerations().forEach(cls -> System.out.println("    - " + cls.getSimpleName()));
             System.out.println("  Annotations :");
             pkg.getAnnotations().forEach(cls -> System.out.println("    - " + cls.getSimpleName()));
+            System.out.println("  Relations :");
+            
+            pkg.getRelations().forEach(relation -> 
+                System.out.println("    - " + relation.getClassSourceName() + " " 
+                    + relation.getRelationType() + " " + relation.getClassTargetName()));
         }
     }
 
     public Project getProject() {
         return project;
     }
- }
-
-
+    
+   
+}

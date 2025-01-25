@@ -115,7 +115,7 @@ public class ClassParserAndRepresentation {
     }
 
     public String getClassName() {
-        return className.substring(className.lastIndexOf('.') + 1); // Extraire seulement le nom de la classe
+        return className.substring(className.lastIndexOf('.') + 1); 
     }
 
 }
