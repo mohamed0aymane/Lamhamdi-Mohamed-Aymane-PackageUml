@@ -19,7 +19,7 @@ public class Examples extends JFrame {
 
 	public Examples() {
 		
-		exp05();
+		exp01();
 	}
 	 void exp01() {
 		 

@@ -6,6 +6,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.mql.java.model.Project;
 import org.mql.java.model.Package;
@@ -73,47 +74,64 @@ public class FileExplorer {
         }
     }
     
-    public void determineRelations() {
+    private void determineRelations() {
         for (Package pkg : project.getPackages()) {
             for (Class<?> cls : pkg.getClasses()) {
-               // System.out.println("Analyzing class: " + cls.getSimpleName());
-                
-                
+                // Vérification de l'héritage
                 Class<?> superClass = cls.getSuperclass();
                 if (superClass != null && superClass != Object.class) {
                     pkg.addRelation(new Relation(superClass.getSimpleName(), cls.getSimpleName(), RelationType.INHERITANCE));
                 }
 
-                
+                // Vérification des interfaces implémentées
                 Class<?>[] interfaces = cls.getInterfaces();
                 for (Class<?> interfaceCls : interfaces) {
                     pkg.addRelation(new Relation(interfaceCls.getSimpleName(), cls.getSimpleName(), RelationType.IMPLEMENTATION));
                 }
 
-               
+                // Vérification des relations dans les champs
                 Field[] fields = cls.getDeclaredFields();
                 for (Field field : fields) {
                     Class<?> fieldType = field.getType();
-                   // System.out.println("Analyzing field: " + field.getName() + " of type " + fieldType.getName());
 
-                    
+                    // Relation d'agrégation ou de composition
                     if (isClassInPackage(fieldType, pkg)) {
                         RelationType relationType = determineCompositionOrAggregation(fieldType);
                         pkg.addRelation(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), relationType));
-                    }
-                    
-                    else if (isCollection(fieldType)) {
+                    } else if (isCollection(fieldType)) {
                         Class<?> genericType = getGenericType(field);
                         if (genericType != null && isClassInPackage(genericType, pkg)) {
-                            System.out.println("Found aggregation: " + cls.getSimpleName() + " -> " + genericType.getSimpleName());
+                            // L'agrégation est définie ici
                             pkg.addRelation(new Relation(cls.getSimpleName(), genericType.getSimpleName(), RelationType.AGGREGATION));
                         }
+                    }
+
+                    // Relation de dépendance (type générique ou classe)
+                    if (isClassInPackage(fieldType, pkg)) {
+                        pkg.addRelation(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), RelationType.DEPENDANCE));
+                    }
+
+                    // Relation de réalisation (interface implémentée ou classe concrète)
+                    if (fieldType.isInterface()) {
+                        pkg.addRelation(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), RelationType.REALISATION));
                     }
                 }
             }
         }
     }
 
+    private boolean isCollection(Class<?> cls) {
+        // Vérification si le type est une collection générique
+        return Collection.class.isAssignableFrom(cls) || List.class.isAssignableFrom(cls) || Set.class.isAssignableFrom(cls);
+    }
+
+    private RelationType determineCompositionOrAggregation(Class<?> cls) {
+        // Vérification de l'agrégation ou de la composition
+        if (Collection.class.isAssignableFrom(cls)) {
+            return RelationType.AGGREGATION;
+        }
+        return RelationType.COMPOSITION;
+    }
 
     private Class<?> getGenericType(Field field) {
         try {
@@ -130,25 +148,9 @@ public class FileExplorer {
         return null;
     }
 
-    private RelationType determineCompositionOrAggregation(Class<?> cls) {
-        if (Collection.class.isAssignableFrom(cls)) {
-            return RelationType.AGGREGATION;
-        }
-        return RelationType.COMPOSITION;
-    }
-
-
-
     private boolean isClassInPackage(Class<?> cls, Package pkg) {
         return cls.getPackage() != null && cls.getPackage().getName().equals(pkg.getName());
     }
-
-    private boolean isCollection(Class<?> cls) {
-        return Collection.class.isAssignableFrom(cls);
-    }
-
-    
-
 
     public List<Class<?>> getClasses() {
         List<Class<?>> classes = new ArrayList<>();
@@ -186,6 +188,4 @@ public class FileExplorer {
     public Project getProject() {
         return project;
     }
-    
-   
 }
