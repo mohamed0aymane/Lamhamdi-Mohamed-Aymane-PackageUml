@@ -43,20 +43,17 @@ public class UmlDiagramViewer extends JFrame {
             }
         }
 
-        // Ajouter le panneau principal à un JScrollPane
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         add(scrollPane);
 
         setVisible(true);
     }
 
-    
     private JPanel createPackagePanel(Package pkg) {
         JPanel packagePanel = new JPanel();
         packagePanel.setLayout(new BorderLayout());
         packagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        // Ajouter le nom du package
         String packageName = pkg.getName().endsWith(".")
                 ? pkg.getName().substring(0, pkg.getName().length() - 1)
                 : pkg.getName();
@@ -129,8 +126,6 @@ public class UmlDiagramViewer extends JFrame {
         return packagePanel;
     }
 
-
-
     private JPanel createClassDiagram(Class<?> cls) {
         JPanel classPanel = new JPanel();
         classPanel.setLayout(new BorderLayout());
@@ -146,18 +141,15 @@ public class UmlDiagramViewer extends JFrame {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS)); 
 
-        // Attributs
         JPanel fieldsPanel = new JPanel();
         fieldsPanel.setLayout(new BoxLayout(fieldsPanel, BoxLayout.Y_AXIS));
         ClassParserAndRepresentation parser = new ClassParserAndRepresentation(cls.getName());
         parser.getAttributes().forEach(attr -> fieldsPanel.add(new JLabel(attr)));
 
-        // Separateur entre les attributs et les methodes
         JSeparator separator = new JSeparator();
         separator.setOrientation(SwingConstants.HORIZONTAL);
         separator.setPreferredSize(new Dimension(0, 5)); 
 
-        // Méthodes
         JPanel methodsPanel = new JPanel();
         methodsPanel.setLayout(new BoxLayout(methodsPanel, BoxLayout.Y_AXIS));
         parser.getMethods().forEach(method -> methodsPanel.add(new JLabel(method)));
@@ -227,8 +219,6 @@ public class UmlDiagramViewer extends JFrame {
         return enumPanel;
     }
 
-  
-
     private JPanel createAnnotationDiagram(Class<?> cls) {
         JPanel annotationPanel = new JPanel();
         annotationPanel.setLayout(new BorderLayout());
@@ -240,7 +230,6 @@ public class UmlDiagramViewer extends JFrame {
         annotationLabel.setForeground(Color.WHITE);
         annotationLabel.setOpaque(true);
         annotationPanel.add(annotationLabel, BorderLayout.NORTH);
-        
         
         JTextArea detailsArea = new JTextArea();
         detailsArea.setEditable(false);
@@ -254,44 +243,7 @@ public class UmlDiagramViewer extends JFrame {
         return annotationPanel;
     }
 
-    private JPanel createRelationsPanel(Package pkg) {
-        JPanel relationsPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                drawRelations(g, pkg); 
-            }
-        };
-        relationsPanel.setBackground(Color.WHITE);
-        relationsPanel.setPreferredSize(new Dimension(300, 200)); 
-        return relationsPanel;
-    }
+ 
 
-    private void drawRelations(Graphics g, Package pkg) {
-        java.util.List<Relation> relations = pkg.getRelations();
-        for (Relation relation : relations) {
-            
-            if (relation.getRelationType() == RelationType.COMPOSITION) {
-                drawDiamond(g, relation.getClassSourceName(), relation.getClassTargetName(), true);
-            } else if (relation.getRelationType() == RelationType.AGGREGATION) {
-                drawDiamond(g, relation.getClassSourceName(), relation.getClassTargetName(), false);
-            }
-        }
-    }
-
-    private void drawDiamond(Graphics g, String sourceClass, String targetClass, boolean filled) {
-        int x1 = 100; 
-        int y1 = 100; 
-        int x2 = 150;
-        int y2 = 150;
-        
-        int[] xPoints = { x1, x1 - 10, x1, x1 + 10 }; 
-        int[] yPoints = { y1, y1 + 10, y1 + 20, y1 + 10 };
-
-        if (filled) {
-            g.fillPolygon(xPoints, yPoints, 4);
-        } else {
-            g.drawPolygon(xPoints, yPoints, 4);
-        }
-    }
+    
 }
