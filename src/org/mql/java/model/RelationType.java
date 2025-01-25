@@ -1,17 +1,12 @@
 package org.mql.java.model;
 
 /*
- COMPOSITION : Une relation forte où une classe dépend complètement d'une autre. Si la classe principale est détruite, les objets associés sont également détruits.
-
-AGGREGATION : Une relation plus faible où une classe peut contenir des objets d'une autre classe, mais ces objets peuvent exister indépendamment.
-
-IMPLEMENTATION : Une classe implémente une interface en fournissant des comportements définis par celle-ci.
-
-INHERITANCE : Une classe hérite des propriétés et méthodes d'une autre classe (classe mère).
-
-REALISATION : Une classe réalise une interface en fournissant des comportements définis par cette interface.
-
-DEPENDANCE : Une classe dépend d'une autre pour fonctionner, généralement par des paramètres ou des méthodes.*/
+ * Aggregation: If the field is a collection (List, Set, Map) or an array.
+Composition: If the field is a direct reference to another class (like Teacher in Classroom or Project in FileExplorer).
+Implementation: If the field is a custom class (not a primitive or String).
+Realisation: If the field is an interface.
+Dependence: If the field is another class in the same package but doesn't fit into the other categories.
+ */
 public enum RelationType {
 		
 	    COMPOSITION,

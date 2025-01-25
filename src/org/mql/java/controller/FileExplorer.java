@@ -6,8 +6,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
 import org.mql.java.model.Project;
 import org.mql.java.model.Package;
 import org.mql.java.model.Relation;
@@ -76,19 +74,16 @@ public class FileExplorer {
     private void determineRelations() {
         for (Package pkg : project.getPackages()) {
             for (Class<?> cls : pkg.getClasses()) {
-                // Relations d'héritage
                 Class<?> superClass = cls.getSuperclass();
                 if (superClass != null && superClass != Object.class) {
                     pkg.addRelation(new Relation(superClass.getSimpleName(), cls.getSimpleName(), RelationType.INHERITANCE));
                 }
 
-                // Relations d'implémentation
                 Class<?>[] interfaces = cls.getInterfaces();
                 for (Class<?> interfaceCls : interfaces) {
                     pkg.addRelation(new Relation(interfaceCls.getSimpleName(), cls.getSimpleName(), RelationType.IMPLEMENTATION));
                 }
 
-                // Relations avec les champs (Agrégation, Composition, Association)
                 Field[] fields = cls.getDeclaredFields();
                 for (Field field : fields) {
                     detectRelationsForField(cls, field, pkg.getRelations(),pkg);
@@ -101,9 +96,7 @@ public class FileExplorer {
         Class<?> fieldType = field.getType();
         Type genericType = field.getGenericType();
 
-        // Vérifier si le champ est une collection (List, Set, ou Map)
         if (Collection.class.isAssignableFrom(fieldType)) {
-            // Gérer les types génériques de manière plus robuste
             if (genericType instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) genericType;
                 Type[] typeArguments = pt.getActualTypeArguments();
@@ -117,29 +110,24 @@ public class FileExplorer {
                 }
             }
         } 
-        // Vérification pour un tableau
+       
         else if (fieldType.isArray()) {
             Class<?> componentType = fieldType.getComponentType();
             if (isCustomClass(componentType)) {
                 relations.add(new Relation(cls.getSimpleName(), componentType.getSimpleName(), RelationType.AGGREGATION));
             }
         } 
-        // Vérification pour les classes personnalisées (pour les relations de Composition, Implémentation, Dépendance)
         else if (isCustomClass(fieldType)) {
-            if (field.getName().equals("teacher")) { // Condition spécifique pour la composition (exemple Classroom -> Teacher)
-                relations.add(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), RelationType.COMPOSITION));
-            } else if (field.getName().equals("project")) { // Condition spécifique pour la composition (exemple FileExplorer -> Project)
+            if (fieldType != null && !fieldType.isPrimitive() && !fieldType.isInterface()) {
                 relations.add(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), RelationType.COMPOSITION));
             } else {
-                // Par défaut, c'est une relation d'implémentation
+                
                 relations.add(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), RelationType.IMPLEMENTATION));
             }
         }
-        // Vérification des interfaces pour la réalisation
         else if (fieldType.isInterface()) {
             relations.add(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), RelationType.REALISATION));
         }
-        // Relations de dépendance
         else if (isClassInPackage(fieldType, pkg)) {
             relations.add(new Relation(cls.getSimpleName(), fieldType.getSimpleName(), RelationType.DEPENDANCE));
         }
@@ -171,7 +159,6 @@ public class FileExplorer {
             pkg.getAnnotations().forEach(cls -> System.out.println("    - " + cls.getSimpleName()));
 
             System.out.println("  Relations :");
-            // Affichage des relations par type
             pkg.getRelations().forEach(relation -> 
                 System.out.println("    - " + relation.getClassSourceName() + " " 
                     + relation.getRelationType() + " " + relation.getClassTargetName()));
